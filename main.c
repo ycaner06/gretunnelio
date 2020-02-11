@@ -1,12 +1,17 @@
 #include <linux/ioctl.h>
-#include <linux/if.h>
-#include <linux/if_tunnel.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <linux/types.h>
+
 #include <sys/types.h>
+#include <linux/socket.h>
 #include <sys/socket.h>
 #include <sys/ioctl.h>
+#include <linux/if.h>
+#include <linux/ip.h>
+#include <linux/in6.h>
+#include <linux/if_tunnel.h>
 #include <unistd.h>
 
 
@@ -245,16 +250,18 @@ int get_ifname(char *buf, const char *name)
 
 	return ret;
 }
+
+
 int main()
 {
 	struct ifreq *ifr;
 	int fd=0;
 	int err=0;
 	struct ip_tunnel_parm *p;
-	char basedev[4] ="gre\0";
-	char tunnelname[5] = "gre1\0";
-	const char remote_addr[12]="192.168.1.7\0";
-	const char local_addr[13]="192.168.1.39\0";
+	const char basedev[5] ="gre0\0";
+	const char tunnelname[5] = "gre1\0";
+	const char remote_addr[13]="10.10.101.83\0";
+	const char local_addr[13]="10.10.101.62\0";
 
 	p   = (struct ip_tunnel_parm *) malloc(sizeof(struct ip_tunnel_parm));
 	ifr = (struct ifreq *)          malloc(sizeof(struct ifreq));
@@ -264,6 +271,8 @@ int main()
 	p->iph.version = 4;
 	p->iph.ihl = 5;
 	p->iph.protocol =IPPROTO_GRE;
+
+	printf("SIOCADDTUNNEL [%d]  IPPROTO_GRE [%d] \n",SIOCADDTUNNEL,IPPROTO_GRE );
 	p->iph.daddr= get_addr32(remote_addr);// remote addr
 	p->iph.saddr = get_addr32(local_addr);// local addr
 	get_ifname(p->name,tunnelname) ; //set name
